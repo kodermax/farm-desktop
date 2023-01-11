@@ -115,16 +115,17 @@ async function createOrUpdateProfile(
             window.log.info(
               `[profileupdate] about to auto scale avatar for convo ${conversation.id}`
             );
-
-            const scaledData = await autoScaleForIncomingAvatar(decryptedData);
-            const upgraded = await processNewAttachment({
-              data: await scaledData.blob.arrayBuffer(),
-              contentType: MIME.IMAGE_UNKNOWN, // contentType is mostly used to generate previews and screenshot. We do not care for those in this case.
-            });
-            // Only update the convo if the download and decrypt is a success
-            conversation.set('avatarPointer', profileInDataMessage.profilePicture);
-            conversation.set('profileKey', toHex(profileKey));
-            ({ path } = upgraded);
+            if (decryptedData !== null) {
+              const scaledData = await autoScaleForIncomingAvatar(decryptedData);
+              const upgraded = await processNewAttachment({
+                data: await scaledData.blob.arrayBuffer(),
+                contentType: MIME.IMAGE_UNKNOWN, // contentType is mostly used to generate previews and screenshot. We do not care for those in this case.
+              });
+              // Only update the convo if the download and decrypt is a success
+              conversation.set('avatarPointer', profileInDataMessage.profilePicture);
+              conversation.set('profileKey', toHex(profileKey));
+              ({ path } = upgraded);
+            }
           } catch (e) {
             window?.log?.error(`[profileupdate] Could not decrypt profile image: ${e}`);
           }
